@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "musicDL": {
+      "commandName": "Project",
+      "commandLineArgs": "download \"https://www.youtube.com/watch?v=eSW2LVbPThw&list=RDv-fc1zv31zE&index=6\" -f \"ラビットホール feat. 初音ミク - DECO*27\" -a \"DECO*27\" -t \"ラビットホール feat. 初音ミク\"",
+      "remoteDebugEnabled": false
+    }
+  }
+}

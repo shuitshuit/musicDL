@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<PublishSingleFile>true</PublishSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ex\**" />
+    <EmbeddedResource Remove="ex\**" />
+    <None Remove="ex\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ffmpeg.exe" />
+    <None Remove="setting.json" />
+    <None Remove="yt-dlp.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.4" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="9.0.4" />
+    <PackageReference Include="System.Management" Version="9.0.4" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
+	<PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AlbumArt\AlbumArt.csproj" />
+		<ProjectReference Include="..\musicDL.Extension\musicDL.Extension.csproj" />
+		<ProjectReference Include="..\Sharing\Sharing.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="ffmpeg.exe">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="setting.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="yt-dlp.exe">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="AlbumArt\" />
+	</ItemGroup>
+
+</Project>

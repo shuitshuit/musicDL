@@ -1,0 +1,31 @@
+{
+  "ffmpegPath": "./ffmpeg.exe",
+  "ytdlpPath": "./yt-dlp.exe",
+  "videoEncode": {
+    "mp4": [ "hevc_nvenc", "aac" ],
+    "webm": [ "libvpx", "opus" ],
+    "ogg": [ "libtheora", "opus" ],
+    "flv": [ "flv", "aac" ],
+    "avi": [ "mpeg4", "pcm" ],
+    "mov": [ "mpeg4", "aac" ]
+  },
+  "audioEncode": {
+    "mp3": "libmp3lame",
+    "ogg": "libvorbis",
+    "wav": "pcm_s16le",
+    "m4a": "aac",
+    "flac": "flac"
+  },
+  "extended": {
+    "AlbumArt": {
+      "spotifyClientId": "",
+      "spotifyClientSecret": "",
+      "spotifyTokenUrl": "https://accounts.spotify.com/api/token"
+    },
+    "Sharing": {
+      "uploadEndpoint": "https://musicdl.shuit.net/api/upload?name=cli",
+      "hubEndpoint": "https://musicdl.shuit.net/cliHub",
+      "tokenEndpoint": "https://musicdl.shuit.net/cli"
+    }
+  }
+}
