@@ -39,18 +39,6 @@ namespace musicDL
         {
             var rootCommand = new RootCommand("Downloading music from youtube");
 
-            var updateCommand = new Command("update", "Update musicDL and yt-dlp");
-            var updateArg = new Argument<string>("version", "Version to update. default is latest");
-            updateArg.SetDefaultValue("latest");
-            updateCommand.AddArgument(updateArg);
-
-            var updateListOption = new CommandLine.Option<bool>("-l", "List available versions");
-            updateCommand.AddOption(updateListOption);
-            updateCommand.SetHandler(() =>
-            {
-                Console.WriteLine("Checking for updates...");
-            });
-
             var downloadCommand = new Command("download", "Download music from youtube");
             downloadCommand.AddAlias("dl");
             var downloadArg = new Argument<Uri>("url", "YouTube Url");
@@ -82,6 +70,20 @@ namespace musicDL
             debugOption.SetDefaultValue(false);
             downloadCommand.AddOption(debugOption);
 
+            var processCommand = new Command("process", "Process existing audio file with extensions only");
+            var filePathArg = new Argument<string>("filepath", "Path to the audio file to process");
+            processCommand.AddArgument(filePathArg);
+
+            var processArtistOption = new CommandLine.Option<string>(["--artist", "-a"]);
+            processCommand.AddOption(processArtistOption);
+
+            var processTitleOption = new CommandLine.Option<string>(["--title", "-t"]);
+            processCommand.AddOption(processTitleOption);
+
+            var processDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "debug mode");
+            processDebugOption.SetDefaultValue(false);
+            processCommand.AddOption(processDebugOption);
+
             int exitCode = 0;
             downloadCommand.SetHandler(async (url, file, artist, title, ve, ae, y, d) =>
             {
@@ -102,6 +104,7 @@ namespace musicDL
 #if DEBUG
                     Console.WriteLine(ex);
 #else
+                    // In debug mode, we print the full exception, otherwise just the message
                     if (d)
                         Console.WriteLine(ex);
                     else
@@ -110,19 +113,33 @@ namespace musicDL
                 }
             }, downloadArg, fileOption, artistOption, titleOption, videoCodecOption, audioCodecOption, yesOption, debugOption);
 
-            rootCommand.AddCommand(updateCommand);
+            processCommand.SetHandler(async (filePath, artist, title, debug) =>
+            {
+                try
+                {
+                    DL dl = new("");
+                    dl.IsDebug = debug;
+                    await dl.ProcessExistingFile(filePath, artist, title);
+                }
+                catch (Exception ex)
+                {
+                    exitCode = 1;
+#if DEBUG
+                    Console.WriteLine(ex);
+#else
+                    if (debug)
+                        Console.WriteLine(ex);
+                    else
+                        Console.WriteLine(ex.Message);
+#endif
+                }
+            }, filePathArg, processArtistOption, processTitleOption, processDebugOption);
+
             rootCommand.AddCommand(downloadCommand);
+            rootCommand.AddCommand(processCommand);
             int code = await rootCommand.InvokeAsync(args);
             if (exitCode != 1) exitCode = code;
             Console.WriteLine($"Exit code: {exitCode}");
-        }
-
-
-        private class UpdateRequest
-        {
-            public string CurrentVersion { get; set; } = Environment.Version.ToString().Replace(".", "");
-            public string Os { get; set; } = Environment.OSVersion.Platform.ToString();
-            public string Version { get; set; } = "latest";
         }
     }
 }

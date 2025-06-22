@@ -1,8 +1,5 @@
 ﻿using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Text.Json;
 using musicDL.Extension;
 using Newtonsoft.Json.Linq;
 using TagLib;
@@ -33,7 +30,7 @@ namespace AlbumArt
                 // Client IDとClient Secret
                 string clientId = settings["spotifyClientId"].ToString() ??
                     throw new ArgumentNullException("spotifyClientId");
-                string clientSecret = settings["spotifyClientId"].ToString() ??
+                string clientSecret = settings["spotifyClientSecret"].ToString() ??
                     throw new ArgumentNullException("spotifyClientSecret");
                 string tokenUrl = settings["spotifyTokenUrl"]?.ToString() ??
                     throw new ArgumentNullException("spotifyTokenUrl");
@@ -55,7 +52,14 @@ namespace AlbumArt
                 // トークンを取得
                 HttpResponseMessage tokenResponse = await httpClient.SendAsync(tokenRequest);
                 string tokenJson = await tokenResponse.Content.ReadAsStringAsync();
-                var tokenObj = JObject.Parse(tokenJson)["access_token"] ?? throw new Exception();
+                
+                if (!tokenResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Spotify API認証に失敗しました。Status: {tokenResponse.StatusCode}, Response: {tokenJson}");
+                }
+                
+                var tokenData = JObject.Parse(tokenJson);
+                var tokenObj = tokenData["access_token"] ?? throw new Exception($"access_tokenの取得に失敗しました。Response: {tokenJson}");
                 string accessToken = tokenObj.ToString();
                 string query = $"track:\"{music.Title}\" artist:\"{music.Artist}\"";
                 var spotify = new SpotifyClient(accessToken);
@@ -202,7 +206,7 @@ namespace AlbumArt
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex);
                 //throw new Exception(ex.Message);
             }
             finally

@@ -335,8 +335,41 @@ namespace musicDL
                 catch {}
             }
         }
-        // Arguments = $"-hide_banner -n -i {this.title}.audio.webm -c:a {this.audioCodec} {this.audioPath}/{this.title}.{this.audioCodec}"
-        // Arguments = $"{this.title} {this.videoCodec} {this.videoPath}"
+
+        public async Task ProcessExistingFile(string filePath, string artist = "不明", string title = "")
+        {
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"ファイルが見つかりません: {filePath}");
+
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath).TrimStart('.');
+            
+            this.Artist = string.IsNullOrEmpty(artist) ? "不明" : artist;
+            this.Title = string.IsNullOrEmpty(title) ? fileNameWithoutExtension : title;
+
+            Music music = new(this.Title, this.Artist, extension, fileNameWithoutExtension, filePath);
+            SelectAlbumArt selectAlbumArt = new();
+            SharingMusic sharingMusic = new();
+
+            Console.WriteLine($"既存ファイルを処理中: {filePath}");
+            Console.WriteLine($"アーティスト: {this.Artist}");
+            Console.WriteLine($"タイトル: {this.Title}");
+
+            try
+            {
+                await selectAlbumArt.ExecuteAsync(music, Setting.Extended[selectAlbumArt.Name]);
+                await sharingMusic.ExecuteAsync(music, Setting.Extended[sharingMusic.Name]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"拡張機能の実行中にエラーが発生しました: {ex.Message}");
+                if (IsDebug)
+                    Console.WriteLine(ex.ToString());
+                throw;
+            }
+
+            Console.WriteLine("拡張機能の実行が完了しました。");
+        }
     }
 
 

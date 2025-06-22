@@ -18,8 +18,8 @@
   },
   "extended": {
     "AlbumArt": {
-      "spotifyClientId": "",
-      "spotifyClientSecret": "",
+      "spotifyClientId": "adf15576cf904669bd245826f4f96b01",
+      "spotifyClientSecret": "b144f7c7e957479994dc850c31eb69e8",
       "spotifyTokenUrl": "https://accounts.spotify.com/api/token"
     },
     "Sharing": {

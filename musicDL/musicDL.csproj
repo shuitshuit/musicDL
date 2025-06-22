@@ -21,10 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="9.0.4" />
-    <PackageReference Include="System.Management" Version="9.0.4" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="9.0.6" />
+    <PackageReference Include="System.Management" Version="9.0.6" />
     <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
 	<PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
