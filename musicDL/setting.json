@@ -24,8 +24,9 @@
     },
     "Sharing": {
       "uploadEndpoint": "https://musicdl.shuit.net/api/upload?name=cli",
-      "hubEndpoint": "https://musicdl.shuit.net/cliHub",
-      "tokenEndpoint": "https://musicdl.shuit.net/cli"
+      "clientId": "8s1r7dio8QCxJUE4yty6P8aYnEcWCBrT",
+      "authEndpoint": "https://musicdl.shuit.net/oauth/authorize",
+      "tokenEndpoint": "https://musicdl.shuit.net/oauth/token"
     }
   }
 }
