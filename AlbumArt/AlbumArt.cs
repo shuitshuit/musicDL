@@ -101,7 +101,8 @@ namespace AlbumArt
                         var img = await httpClient.GetAsync(albumArt);
                         var extension = img.Content.Headers.ContentType?.MediaType?.Split('/')[1];
                         await using var st = await img.Content.ReadAsStreamAsync();
-                        albumArtPath = $@"{directlyPath}\AlbumArt\{music.FileName}.{extension}";
+                        string safeFileName = Path.GetFileName(music.FileName);
+                        albumArtPath = Path.Combine(directlyPath, "AlbumArt", $"{safeFileName}.{extension}");
                         await using var file = new FileStream(albumArtPath, FileMode.OpenOrCreate, FileAccess.Write);
                         await st.CopyToAsync(file);
                         st.Close();
@@ -189,8 +190,10 @@ namespace AlbumArt
                 try
                 {
                     var release = select.Release;
-                    DateTime date = DateTime.Parse(release);
-                    musicFile.Tag.Year = Convert.ToUInt32(date.Year);
+                    if (DateTime.TryParse(release, out var date))
+                    {
+                        musicFile.Tag.Year = Convert.ToUInt32(date.Year);
+                    }
                 }
                 catch { }
                 #endregion
