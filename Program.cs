@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Text;
 using System.Text.Json;
 using CommandLine = System.CommandLine;
 
@@ -11,11 +12,10 @@ namespace musicDL
 #if DEBUG
             try
             {
-                args = new string[] { "transform", "test.flac", "-f", "mp3", "-a", "テストアーティスト", "-t", "テストタイトル", "--debug" };
-                _ = args.All(x => { Console.Write(x + " "); return true; });
-                Console.WriteLine();
                 Console.WriteLine("debug mode");
-                MainAsync(args).Wait();
+                Console.Write("Enter command (or press Enter for default test command): ");
+                var arg = Console.ReadLine() ?? "transform test.flac -f mp3 -a テストアーティスト -t テストタイトル --debug";
+                MainAsync(SplitInputArg(arg)).Wait();
             }
             catch (Exception ex)
             {
@@ -36,7 +36,12 @@ namespace musicDL
         public static async Task MainAsync(string[] args)
         {
             var settingPath = Path.Combine(AppContext.BaseDirectory, "setting.json");
-            Setting setting = JsonSerializer.Deserialize<Setting>(await File.ReadAllTextAsync(settingPath))!;
+            var settingJson = await File.ReadAllTextAsync(settingPath);
+#if DEBUG
+            Console.WriteLine(settingJson);
+#endif
+            var settingElement = JsonSerializer.Deserialize<JsonElement>(settingJson);
+            Setting setting = new(settingElement);
 
             var rootCommand = new RootCommand("Music metadata manager - Process metadata, album art, and convert audio files");
 
@@ -510,6 +515,46 @@ namespace musicDL
             Console.WriteLine($"Exit code: {exitCode}");
 
             #endregion
+        }
+
+
+        /// <summary>
+        /// デバックモード時の引数分割(引用符対応)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private static string[] SplitInputArg(string input)
+        {
+            var inQuotes = false;
+            var currentArg = new StringBuilder();
+            var args = new List<string>();
+            foreach (var c in input)
+            {
+                switch (c)
+                {
+                    case '\"':
+                        inQuotes = !inQuotes;
+                        break;
+                    case ' ' when !inQuotes:
+                    {
+                        if (currentArg.Length > 0)
+                        {
+                            args.Add(currentArg.ToString());
+                            currentArg.Clear();
+                        }
+
+                        break;
+                    }
+                    default:
+                        currentArg.Append(c);
+                        break;
+                }
+            }
+            if (currentArg.Length > 0)
+            {
+                args.Add(currentArg.ToString());
+            }
+            return args.ToArray();
         }
     }
 }
