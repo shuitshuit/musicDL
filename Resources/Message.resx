@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="defaultArtistOptionDescription" xml:space="preserve">
+    <value>Default artist name for all files</value>
+  </data>
+  <data name="batchCommandDescription" xml:space="preserve">
+    <value>Process multiple audio files in a directory</value>
+  </data>
+  <data name="directoryArgDescription" xml:space="preserve">
+    <value>Directory containing audio files to process</value>
+  </data>
+  <data name="filePathArgDescription" xml:space="preserve">
+    <value>Path to the audio file to process</value>
+  </data>
+  <data name="processCommandDescription" xml:space="preserve">
+    <value>Process existing audio file with metadata</value>
+  </data>
+  <data name="DebugOptionDescription" xml:space="preserve">
+    <value>Enable debug mode</value>
+  </data>
+  <data name="TitleOptionDescription" xml:space="preserve">
+    <value>Song title</value>
+  </data>
+  <data name="RootCommandDescription" xml:space="preserve">
+    <value>Music metadata manager - Process metadata, album art, and convert audio files</value>
+  </data>
+  <data name="convertCommandDescription" xml:space="preserve">
+    <value>Convert audio file to different format</value>
+  </data>
+  <data name="convertInputArgDescription" xml:space="preserve">
+    <value>Input audio file path</value>
+  </data>
+  <data name="formatOptionDescription" xml:space="preserve">
+    <value>Target audio format</value>
+  </data>
+  <data name="outputOptionDescription" xml:space="preserve">
+    <value>Output file path (optional)</value>
+  </data>
+  <data name="keepMetadataOptionDescription" xml:space="preserve">
+    <value>Copy metadata from source file</value>
+  </data>
+  <data name="batchConvertCommandDescription" xml:space="preserve">
+    <value>Convert multiple audio files in a directory</value>
+  </data>
+  <data name="batchConvertDirArgDescription" xml:space="preserve">
+    <value>Directory containing audio files to convert</value>
+  </data>
+  <data name="batchFormatOptionDescription" xml:space="preserve">
+    <value>Target audio format</value>
+  </data>
+  <data name="transformCommandDescription" xml:space="preserve">
+    <value>Convert audio file and process with metadata/extensions</value>
+  </data>
+  <data name="transformInputArgDescription" xml:space="preserve">
+    <value>Input audio file path</value>
+  </data>
+  <data name="tfOutputOptionDescription" xml:space="preserve">
+    <value>Output file path (optional)</value>
+  </data>
+  <data name="batchTransformCommandDescription" xml:space="preserve">
+    <value>Convert multiple files and process with metadata/extensions</value>
+  </data>
+  <data name="btfDirArgDescription" xml:space="preserve">
+    <value>Directory containing audio files</value>
+  </data>
+  <data name="startConvert" xml:space="preserve">
+    <value>Start file conversion</value>
+  </data>
+  <data name="conversionFormat" xml:space="preserve">
+    <value>Conversion Format</value>
+  </data>
+  <data name="conversionComplete" xml:space="preserve">
+    <value>Conversion Complete</value>
+  </data>
+  <data name="directoryNotFound" xml:space="preserve">
+    <value>Directory not found</value>
+  </data>
+  <data name="noConvertible" xml:space="preserve">
+    <value>No convertible audio files were found.</value>
+  </data>
+  <data name="convertingFiles" xml:space="preserve">
+    <value>Converting {0} files to {1} format...</value>
+    <comment>{0} = file count, {1} = format name</comment>
+  </data>
+  <data name="conversionError" xml:space="preserve">
+    <value>conversion error</value>
+  </data>
+  <data name="batchConversionResult" xml:space="preserve">
+    <value>Batch conversions completed: successful {0}, failed {1}</value>
+    <comment>{0} = successfull count, {1} = failed count</comment>
+  </data>
+  <data name="startConvPro" xml:space="preserve">
+    <value>Start conversion + metadata processing</value>
+  </data>
+  <data name="runExt" xml:space="preserve">
+    <value>Running extensions...</value>
+  </data>
+  <data name="allCoplete" xml:space="preserve">
+    <value>All processes have been completed.</value>
+  </data>
+  <data name="noProcessableFile" xml:space="preserve">
+    <value>No processable audio files were found.</value>
+  </data>
+  <data name="convertProcessing" xml:space="preserve">
+    <value>Convert {0} files to {1} format and perform metadata processing...</value>
+  </data>
+  <data name="inProcess" xml:space="preserve">
+    <value>in process</value>
+  </data>
+  <data name="unknown" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="complete" xml:space="preserve">
+    <value>complete</value>
+  </data>
+  <data name="error" xml:space="preserve">
+    <value>error</value>
+  </data>
+  <data name="batchProcessResult" xml:space="preserve">
+    <value>Batch processing completed: Success {successful}, Failure {failed</value>
+  </data>
+  <data name="fileNotFound" xml:space="preserve">
+    <value>File not found</value>
+  </data>
+  <data name="processExistingFile" xml:space="preserve">
+    <value>Processing an existing file</value>
+  </data>
+  <data name="artist" xml:space="preserve">
+    <value>artist</value>
+  </data>
+  <data name="title" xml:space="preserve">
+    <value>title</value>
+  </data>
+  <data name="metadataComplete" xml:space="preserve">
+    <value>Metadata update is complete.</value>
+  </data>
+  <data name="metadataError" xml:space="preserve">
+    <value>An error occurred during metadata processing</value>
+  </data>
+  <data name="trackNotFound" xml:space="preserve">
+    <value>Track not found.</value>
+  </data>
+  <data name="trackIDInvalid" xml:space="preserve">
+    <value>The track ID format is invalid.</value>
+  </data>
+  <data name="firstPage" xml:space="preserve">
+    <value>This is the first page.</value>
+  </data>
+  <data name="noMoreItems" xml:space="preserve">
+    <value>No more items</value>
+  </data>
+  <data name="selectTheNumber" xml:space="preserve">
+    <value>Select the number of the song you want to apply or enter the track ID</value>
+  </data>
+  <data name="authURL" xml:space="preserve">
+    <value>authentication URL</value>
+  </data>
+  <data name="pleaseCompAuth" xml:space="preserve">
+    <value>Please complete the authentication in your browser...</value>
+  </data>
+  <data name="notRetriveAuthCode" xml:space="preserve">
+    <value>Could not retrieve the authorization code.</value>
+  </data>
+  <data name="pressStoSkip" xml:space="preserve">
+    <value>Press 's' to skip sharing.</value>
+  </data>
+  <data name="sharingSkip" xml:space="preserve">
+    <value>Sharing skipped by user.</value>
+  </data>
+  <data name="noResultSearch" xml:space="preserve">
+    <value>No search results found.</value>
+  </data>
+  <data name="enterTrackID" xml:space="preserve">
+    <value>Enter the Spotify track ID directly. or Enter to skip</value>
+  </data>
+</root>

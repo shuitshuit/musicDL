@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using musicDL.Resources;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -34,19 +35,25 @@ namespace musicDL
                     Spiner.Spin("Uploading...");
                 }
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.WriteLine("Upload complete");
+                Console.WriteLine(@"Upload complete");
                 var response = await responseTask;
                 if (response.IsSuccessStatusCode)
                 {
                     //Console.WriteLine($"Response: {await response.Content.ReadAsStringAsync()}");
                     var json = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                    Console.WriteLine($"Shared on {json?["url"] ?? "null"}");
+                    Console.WriteLine($@"Shared on {json?["url"] ?? "null"}");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to sharing. statusCode: {(int)response.StatusCode}");
+                    Console.WriteLine($@"Failed to sharing. statusCode: {(int)response.StatusCode}");
                     //Console.WriteLine(await response.Content.ReadAsStringAsync());
                 }
+            }
+            catch (UserInputSkipException)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(Message.sharingSkip);
+                Console.ResetColor();
             }
             catch (Exception ex)
             {
@@ -68,12 +75,12 @@ namespace musicDL
             (var codeVerifier, var codeChallenge) = GeneratePkceParameters();
             var state = GenerateRandomString(32);
             var authUrl = BuildAuthorizationUrl(codeChallenge, state, setting);
-            Console.WriteLine($"認証URL: {authUrl}");
+            Console.WriteLine($@"{Message.authURL}: {authUrl}");
 
-            var _httpListener = new HttpListener();
+            var httpListener = new HttpListener();
             // HTTPリスナーを開始
-            _httpListener.Prefixes.Add(RedirectUri + "/");
-            _httpListener.Start();
+            httpListener.Prefixes.Add(RedirectUri + "/");
+            httpListener.Start();
 
             // ブラウザを開く
             Process.Start(new ProcessStartInfo
@@ -82,10 +89,20 @@ namespace musicDL
                 UseShellExecute = true
             });
 
-            Console.WriteLine("ブラウザで認証を完了してください...");
+            Console.WriteLine(Message.pleaseCompAuth);
 
             // コールバックを待機
-            var context = await _httpListener.GetContextAsync();
+            var contextTask = httpListener.GetContextAsync();
+            while (!contextTask.IsCompleted)
+            {
+                // ユーザーが'S'キーを押したらスキップ
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(Message.pressStoSkip + '\r');
+                if (!Console.KeyAvailable || Console.ReadKey(true).Key != ConsoleKey.S) continue;
+                httpListener.Stop();
+                throw new UserInputSkipException();
+            }
+            var context = await contextTask;
             var query = context.Request.Url?.Query;
 
             // レスポンスを送信
@@ -94,7 +111,7 @@ namespace musicDL
             context.Response.ContentLength64 = buffer.Length;
             await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
             context.Response.OutputStream.Close();
-            _httpListener.Stop();
+            httpListener.Stop();
 
             // 認証コードを取得
             var queryParams = ParseQueryString(query ?? "");
@@ -102,7 +119,7 @@ namespace musicDL
             var returnedState = queryParams.TryGetValue("state", out var stateValue) ? stateValue : null;
 
             if (string.IsNullOrEmpty(code))
-                throw new InvalidOperationException("認証コードが取得できませんでした");
+                throw new InvalidOperationException(Message.notRetriveAuthCode);
 
             if (returnedState != state)
                 throw new InvalidOperationException("State parameter mismatch");
@@ -197,14 +214,17 @@ namespace musicDL
             foreach (var pair in pairs)
             {
                 var parts = pair.Split('=', 2);
-                if (parts.Length == 2)
-                {
-                    var key = Uri.UnescapeDataString(parts[0]);
-                    var value = Uri.UnescapeDataString(parts[1]);
-                    result[key] = value;
-                }
+                if (parts.Length != 2) continue;
+                var key = Uri.UnescapeDataString(parts[0]);
+                var value = Uri.UnescapeDataString(parts[1]);
+                result[key] = value;
             }
             return result;
+        }
+
+        private class UserInputSkipException : Exception
+        {
+            public UserInputSkipException() : base("User skipped the input.") { }
         }
     }
 }

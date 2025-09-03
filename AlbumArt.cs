@@ -3,10 +3,11 @@ using Newtonsoft.Json.Linq;
 using SpotifyAPI.Web;
 using System.Text.RegularExpressions;
 using TagLib;
+using musicDL.Resources;
 
 namespace musicDL
 {
-    internal class AlbumArt
+    internal partial class AlbumArt
     {
         public static async Task SelectMetadata(string artist, string title, string filePath, Dictionary<string, object> setting)
         {
@@ -51,26 +52,50 @@ namespace musicDL
             //Console.WriteLine(JsonSerializer.Serialize(res.Tracks));
             var items = res.Tracks.Items;
             MusicInfo select;
-            bool selectDo = true;
-            Console.WriteLine($"{items?.Count ?? 0} items found");
-            Console.Write("Enter track id on spotify: [null] -> ");
-            string id = Console.ReadLine() ?? string.Empty;
-            if (!string.IsNullOrEmpty(id))
+            Console.WriteLine($@"{items?.Count ?? 0} items found");
+            if (items != null && items.Count != 0)
             {
-                var info = await spotify.Tracks.Get(id);
-                select = new MusicInfo(info.Name, info.Artists.Select(x => x.Name).ToArray(), info.Album.Name,
-                    info.Album.Artists.Select(x => x.Name).ToArray(), new Uri(info.Album.Images[0].Url), info.Album.ReleaseDate,
-                    info.ExternalIds["isrc"], Convert.ToUInt32(info.DiscNumber), Convert.ToUInt32(info.TrackNumber), Convert.ToUInt32(info.Album.TotalTracks));
-                selectDo = false;
-            }
-            else if (items != null && selectDo && items.Any())
-            {
-                select = SelectMusicInfo(items);
+                select = SelectMusicInfo(items, spotify);
             }
             else
             {
-                Console.WriteLine("No search results found.");
-                return;
+                Console.WriteLine(Message.noResultSearch);
+                Console.Write($@"{Message.enterTrackID} -> ");
+                string trackId = Console.ReadLine() ?? "";
+                if (string.IsNullOrEmpty(trackId)) // 入力が空の場合は終了
+                {
+                    Console.WriteLine(Message.trackIDInvalid);
+                    return;
+                }
+                try
+                {
+                    var info = await spotify.Tracks.Get(trackId);
+                    // トラックIDから情報を正常に取得できた場合、MusicInfoオブジェクトを作成して返す
+                    select = new MusicInfo(info.Name, info.Artists.Select(x => x.Name).ToArray(),
+                        info.Album.Name, info.Album.Artists.Select(x => x.Name).ToArray(),
+                        new Uri(info.Album.Images[0].Url), info.Album.ReleaseDate, info.ExternalIds["isrc"],
+                        Convert.ToUInt32(info.DiscNumber), Convert.ToUInt32(info.TrackNumber),
+                        Convert.ToUInt32(info.Album.TotalTracks));
+                }
+                catch (AggregateException ex)
+                {
+                    switch (ex.InnerException)
+                    {
+                        case APIException { Response.StatusCode: System.Net.HttpStatusCode.NotFound }:
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(Message.trackNotFound);
+                            Console.ResetColor();
+                            return;
+                        case APIException:
+                            // その他のAPI例外を処理 ex: IDの形式が不正
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(Message.trackIDInvalid);
+                            Console.ResetColor();
+                            return;
+                        default:
+                            throw;
+                    }
+                }
             }
             #region add album art
             try
@@ -91,7 +116,7 @@ namespace musicDL
                     await using var file = new FileStream(albumArtPath, FileMode.OpenOrCreate, FileAccess.Write);
                     await st.CopyToAsync(file);
                     st.Close();
-                    Console.WriteLine($"Album Art on {albumArtPath}");
+                    Console.WriteLine($@"Album Art on {albumArtPath}");
                 }
                 else if (System.IO.File.Exists(albumArt))
                 {
@@ -99,7 +124,7 @@ namespace musicDL
                 }
                 else
                 {
-                    Console.WriteLine("Album Art not found");
+                    Console.WriteLine(@"Album Art not found");
                     return;
                 }
                 //Apply Album Art
@@ -110,7 +135,7 @@ namespace musicDL
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Album Art: {ex.Message}");
+                Console.WriteLine($@"Album Art: {ex.Message}");
                 Console.WriteLine(ex);
             }
             #endregion
@@ -193,7 +218,7 @@ namespace musicDL
             return;
         }
 
-        private static MusicInfo SelectMusicInfo(List<FullTrack> items)
+        private static MusicInfo SelectMusicInfo(List<FullTrack> items, SpotifyClient spotify)
         {
             int n = 0;
             int num = 0;
@@ -219,38 +244,39 @@ namespace musicDL
                 }
                 n += 3;
                 int x = 1;
-                // Console.WriteLine(MusicInfo);
                 foreach (var item in list)
                 {
-                    Console.WriteLine($"{x}: {item.Title}");
-                    Console.WriteLine($"artists: {string.Join(", ", item.Artists)}");
-                    Console.WriteLine($"album: {item.Album}");
-                    Console.WriteLine($"album artists: {string.Join(", ", item.AlbumArtists)}");
-                    Console.WriteLine($"album art: {item.AlbumArt}");
-                    Console.WriteLine($"release: {item.Release}");
+                    Console.WriteLine($@"{x}: {item.Title}");
+                    Console.WriteLine($@"artists: {string.Join(", ", item.Artists)}");
+                    Console.WriteLine($@"album: {item.Album}");
+                    Console.WriteLine($@"album artists: {string.Join(", ", item.AlbumArtists)}");
+                    Console.WriteLine($@"album art: {item.AlbumArt}");
+                    Console.WriteLine($@"release: {item.Release}");
                     Console.WriteLine();
                     x++;
                 }
                 switch (list.Count)
                 {
+                    // []は空文字時にマッチする ()はカッコ内の文字列でもマッチする
                     case 0:
-                        Console.WriteLine("No more items");
+                        Console.WriteLine(Message.noMoreItems);
+                        Console.WriteLine($@"{Message.selectTheNumber}: (b)ack -> ");
                         break;
                     case 1:
-                        Console.Write("Select the number of the song you want to apply: [1] (b)ack -> ");
+                        Console.Write($@"{Message.selectTheNumber}: [1] (b)ack -> ");
                         break;
                     case 2:
-                        Console.Write("Select the number of the song you want to apply: [1] 2 (b)ack -> ");
+                        Console.Write($@"{Message.selectTheNumber}: [1] 2 (b)ack -> ");
                         break;
                     default:
-                        Console.Write("Select the number of the song you want to apply: [1] 2 3 (n)ext (b)ack -> ");
+                        Console.Write($@"{Message.selectTheNumber}: [1] 2 3 (n)ext (b)ack -> ");
                         break;
                 }
                 string selectNum = Console.ReadLine() ?? "1";
+                if (string.IsNullOrEmpty(selectNum)) selectNum = "1";
                 if (selectNum is "next" or "n")
                 {
                     Console.Clear();
-                    continue;
                 }
                 else if (selectNum is "1" or "2" or "3")
                 {
@@ -261,15 +287,48 @@ namespace musicDL
                 {
                     Console.Clear();
                     n -= 6;
-                    if (n < 0)
-                    {
-                    }
-                    continue;
+                    if (n >= 0) continue;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(Message.firstPage);
+                    Console.ResetColor();
+                    n = 0;
                 }
                 else
                 {
-                    num = 0;
-                    break;
+                    n = 0;
+                    try
+                    {
+                        var info = spotify.Tracks.Get(selectNum).Result;
+                        // トラックIDから情報を正常に取得できた場合、MusicInfoオブジェクトを作成して返す
+                        MusicInfo musicInfo = new(info.Name, info.Artists.Select(x => x.Name).ToArray(),
+                            info.Album.Name, info.Album.Artists.Select(x => x.Name).ToArray(),
+                            new Uri(info.Album.Images[0].Url), info.Album.ReleaseDate,info.ExternalIds["isrc"],
+                            Convert.ToUInt32(info.DiscNumber), Convert.ToUInt32(info.TrackNumber),
+                            Convert.ToUInt32(info.Album.TotalTracks));
+                        return musicInfo;
+
+                    }
+                    catch (AggregateException ex)
+                    {
+                        switch (ex.InnerException)
+                        {
+                            case APIException { Response.StatusCode: System.Net.HttpStatusCode.NotFound }:
+                                Console.Clear();
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine(Message.trackNotFound);
+                                Console.ResetColor();
+                                continue;
+                            case APIException:
+                                // その他のAPI例外を処理 ex: IDの形式が不正
+                                Console.Clear();
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine(Message.trackIDInvalid);
+                                Console.ResetColor();
+                                continue;
+                            default:
+                                throw;
+                        }
+                    }
                 }
             }
             return list[num];

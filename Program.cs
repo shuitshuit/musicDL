@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.Text;
 using System.Text.Json;
+using musicDL.Resources;
 using CommandLine = System.CommandLine;
 
 namespace musicDL
@@ -43,36 +44,36 @@ namespace musicDL
             var settingElement = JsonSerializer.Deserialize<JsonElement>(settingJson);
             Setting setting = new(settingElement);
 
-            var rootCommand = new RootCommand("Music metadata manager - Process metadata, album art, and convert audio files");
+            var rootCommand = new RootCommand(Message.RootCommandDescription);
 
             #region Process Commands (メタデータ処理)
 
-            // メタデータ処理コマンド (元のprocessコマンド)
-            var processCommand = new Command("process", "Process existing audio file with metadata");
+            // メタデータ処理コマンド
+            var processCommand = new Command("process", Message.processCommandDescription);
             processCommand.AddAlias("p");
-            var filePathArg = new Argument<string>("filepath", "Path to the audio file to process");
+            var filePathArg = new Argument<string>("filepath", Message.filePathArgDescription);
             processCommand.AddArgument(filePathArg);
 
-            var processArtistOption = new CommandLine.Option<string>(["--artist", "-a"], "Artist name");
+            var processArtistOption = new CommandLine.Option<string>(["--artist", "-a"], Message.defaultArtistOptionDescription);
             processCommand.AddOption(processArtistOption);
 
-            var processTitleOption = new CommandLine.Option<string>(["--title", "-t"], "Song title");
+            var processTitleOption = new CommandLine.Option<string>(["--title", "-t"], Message.TitleOptionDescription);
             processCommand.AddOption(processTitleOption);
 
-            var processDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "Enable debug mode");
+            var processDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             processDebugOption.SetDefaultValue(false);
             processCommand.AddOption(processDebugOption);
 
             // バッチ処理コマンド
-            var batchCommand = new Command("batch", "Process multiple audio files in a directory");
+            var batchCommand = new Command("batch", Message.batchCommandDescription);
             batchCommand.AddAlias("b");
-            var directoryArg = new Argument<string>("directory", "Directory containing audio files to process");
+            var directoryArg = new Argument<string>("directory", Message.directoryArgDescription);
             batchCommand.AddArgument(directoryArg);
 
-            var batchArtistOption = new CommandLine.Option<string>(["--artist", "-a"], "Default artist name for all files");
+            var batchArtistOption = new CommandLine.Option<string>(["--artist", "-a"], Message.defaultArtistOptionDescription);
             batchCommand.AddOption(batchArtistOption);
 
-            var batchDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "Enable debug mode");
+            var batchDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             batchDebugOption.SetDefaultValue(false);
             batchCommand.AddOption(batchDebugOption);
 
@@ -81,41 +82,40 @@ namespace musicDL
             #region Convert Commands (ファイル変換)
 
             // ファイル変換コマンド
-            var convertCommand = new Command("convert", "Convert audio file to different format");
+            var convertCommand = new Command("convert", Message.convertCommandDescription);
             convertCommand.AddAlias("c");
-            var convertInputArg = new Argument<string>("input", "Input audio file path");
+            var convertInputArg = new Argument<string>("input", Message.convertInputArgDescription);
             convertCommand.AddArgument(convertInputArg);
 
-            var formatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], "Target audio format");
+            var formatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], Message.formatOptionDescription);
             formatOption.SetDefaultValue(AudioExtension.Mp3);
             convertCommand.AddOption(formatOption);
 
             var outputOption = new CommandLine.Option<string>(["--output", "-o"], "Output file path (optional)");
             convertCommand.AddOption(outputOption);
 
-            var keepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], "Copy metadata from source file");
+            var keepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], Message.keepMetadataOptionDescription);
             keepMetadataOption.SetDefaultValue(true);
             convertCommand.AddOption(keepMetadataOption);
 
-            var convertDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "Enable debug mode");
+            var convertDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             convertDebugOption.SetDefaultValue(false);
             convertCommand.AddOption(convertDebugOption);
 
             // バッチ変換コマンド
-            var batchConvertCommand = new Command("batch-convert", "Convert multiple audio files in a directory");
+            var batchConvertCommand = new Command("batch-convert", Message.batchConvertCommandDescription);
             batchConvertCommand.AddAlias("bc");
-            var batchConvertDirArg = new Argument<string>("directory", "Directory containing audio files to convert");
+            var batchConvertDirArg = new Argument<string>("directory", Message.batchConvertDirArgDescription);
             batchConvertCommand.AddArgument(batchConvertDirArg);
 
-            var batchFormatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], "Target audio format");
+            var batchFormatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], Message.batchFormatOptionDescription);
             batchFormatOption.SetDefaultValue(AudioExtension.Mp3);
             batchConvertCommand.AddOption(batchFormatOption);
-
-            var batchKeepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], "Copy metadata from source files");
+            var batchKeepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], Message.keepMetadataOptionDescription);
             batchKeepMetadataOption.SetDefaultValue(true);
             batchConvertCommand.AddOption(batchKeepMetadataOption);
 
-            var batchConvertDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "Enable debug mode");
+            var batchConvertDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             batchConvertDebugOption.SetDefaultValue(false);
             batchConvertCommand.AddOption(batchConvertDebugOption);
 
@@ -124,50 +124,50 @@ namespace musicDL
             #region Combined Commands (変換＋拡張機能処理)
 
             // 変換＋メタデータ処理コマンド（単一ファイル）
-            var transformCommand = new Command("transform", "Convert audio file and process with metadata/extensions");
+            var transformCommand = new Command("transform", Message.transformCommandDescription);
             transformCommand.AddAlias("tf");
-            var transformInputArg = new Argument<string>("input", "Input audio file path");
+            var transformInputArg = new Argument<string>("input", Message.transformInputArgDescription);
             transformCommand.AddArgument(transformInputArg);
 
-            var tfFormatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], "Target audio format");
+            var tfFormatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], Message.formatOptionDescription);
             tfFormatOption.SetDefaultValue(AudioExtension.Mp3);
             transformCommand.AddOption(tfFormatOption);
 
-            var tfOutputOption = new CommandLine.Option<string>(["--output", "-o"], "Output file path (optional)");
+            var tfOutputOption = new CommandLine.Option<string>(["--output", "-o"], Message.tfOutputOptionDescription);
             transformCommand.AddOption(tfOutputOption);
 
-            var tfArtistOption = new CommandLine.Option<string>(["--artist", "-a"], "Artist name");
+            var tfArtistOption = new CommandLine.Option<string>(["--artist", "-a"], Message.defaultArtistOptionDescription);
             transformCommand.AddOption(tfArtistOption);
 
-            var tfTitleOption = new CommandLine.Option<string>(["--title", "-t"], "Song title");
+            var tfTitleOption = new CommandLine.Option<string>(["--title", "-t"], Message.TitleOptionDescription);
             transformCommand.AddOption(tfTitleOption);
 
-            var tfKeepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], "Copy metadata from source file");
+            var tfKeepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], Message.keepMetadataOptionDescription);
             tfKeepMetadataOption.SetDefaultValue(true);
             transformCommand.AddOption(tfKeepMetadataOption);
 
-            var tfDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "Enable debug mode");
+            var tfDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             tfDebugOption.SetDefaultValue(false);
             transformCommand.AddOption(tfDebugOption);
 
             // バッチ変換＋メタデータ処理コマンド
-            var batchTransformCommand = new Command("batch-transform", "Convert multiple files and process with metadata/extensions");
+            var batchTransformCommand = new Command("batch-transform", Message.batchTransformCommandDescription);
             batchTransformCommand.AddAlias("btf");
-            var btfDirArg = new Argument<string>("directory", "Directory containing audio files");
+            var btfDirArg = new Argument<string>("directory", Message.btfDirArgDescription);
             batchTransformCommand.AddArgument(btfDirArg);
 
-            var btfFormatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], "Target audio format");
+            var btfFormatOption = new CommandLine.Option<AudioExtension>(["--format", "-f"], Message.formatOptionDescription);
             btfFormatOption.SetDefaultValue(AudioExtension.Mp3);
             batchTransformCommand.AddOption(btfFormatOption);
 
-            var btfArtistOption = new CommandLine.Option<string>(["--artist", "-a"], "Default artist name for all files");
+            var btfArtistOption = new CommandLine.Option<string>(["--artist", "-a"], Message.defaultArtistOptionDescription);
             batchTransformCommand.AddOption(btfArtistOption);
 
-            var btfKeepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], "Copy metadata from source files");
+            var btfKeepMetadataOption = new CommandLine.Option<bool>(["--keep-metadata", "-k"], Message.keepMetadataOptionDescription);
             btfKeepMetadataOption.SetDefaultValue(true);
             batchTransformCommand.AddOption(btfKeepMetadataOption);
 
-            var btfDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], "Enable debug mode");
+            var btfDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             btfDebugOption.SetDefaultValue(false);
             batchTransformCommand.AddOption(btfDebugOption);
 
@@ -262,11 +262,12 @@ namespace musicDL
             {
                 try
                 {
-                    AudioConverter converter = new(setting);
-                    converter.IsDebug = debug;
-
-                    Console.WriteLine($"ファイル変換を開始: {input}");
-                    Console.WriteLine($"変換形式: {format}");
+                    AudioConverter converter = new(setting)
+                    {
+                        IsDebug = debug
+                    };
+                    Console.WriteLine($@"{Message.startConvert}: {input}");
+                    Console.WriteLine($@"{Message.conversionFormat}: {format}");
 
                     string result;
                     if (keepMetadata)
@@ -278,7 +279,7 @@ namespace musicDL
                         result = await converter.ConvertAudioAsync(input, format, output);
                     }
 
-                    Console.WriteLine($"変換完了: {result}");
+                    Console.WriteLine($@":{Message.conversionComplete} {result}");
                 }
                 catch (Exception ex)
                 {
@@ -299,7 +300,7 @@ namespace musicDL
                 try
                 {
                     if (!Directory.Exists(directory))
-                        throw new DirectoryNotFoundException($"ディレクトリが見つかりません: {directory}");
+                        throw new DirectoryNotFoundException($"{Message.directoryNotFound}: {directory}");
 
                     var audioExtensions = new[] { ".mp3", ".flac", ".wav", ".aac", ".ogg" };
                     var audioFiles = Directory.GetFiles(directory)
@@ -308,11 +309,12 @@ namespace musicDL
 
                     if (!audioFiles.Any())
                     {
-                        Console.WriteLine("変換可能な音声ファイルが見つかりませんでした。");
+                        Console.WriteLine(Message.noConvertible);
                         return;
                     }
 
-                    Console.WriteLine($"{audioFiles.Count}個のファイルを{format}形式に変換します...");
+                    // {ファイル数}個のファイルを{フォーマット名}形式に変換します...
+                    Console.WriteLine(Message.convertingFiles, audioFiles.Count, format);
 
                     AudioConverter converter = new(setting)
                     {
@@ -336,17 +338,18 @@ namespace musicDL
                                 result = await converter.ConvertAudioAsync(file, format);
                             }
 
-                            Console.WriteLine($"変換完了: {Path.GetFileName(result)}");
+                            Console.WriteLine($@"{Message.conversionComplete}: {Path.GetFileName(result)}");
                             successful++;
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"変換エラー ({Path.GetFileName(file)}): {ex.Message}");
+                            Console.WriteLine($@"{Message.conversionError} ({Path.GetFileName(file)}): {ex.Message}");
                             failed++;
                         }
                     }
 
-                    Console.WriteLine($"バッチ変換完了: 成功 {successful}件, 失敗 {failed}件");
+                    // バッチ変換完了: 成功 {successful}件, 失敗 {failed}件
+                    Console.WriteLine(Message.batchConversionResult, successful, failed);
                 }
                 catch (Exception ex)
                 {
@@ -370,13 +373,17 @@ namespace musicDL
             {
                 try
                 {
-                    MetadataProcessor processor = new(setting.Extended);
-                    AudioConverter converter = new(setting);
-                    converter.IsDebug = debug;
-                    processor.IsDebug = debug;
+                    MetadataProcessor processor = new(setting.Extended)
+                    {
+                        IsDebug = debug
+                    };
+                    AudioConverter converter = new(setting)
+                    {
+                        IsDebug = debug
+                    };
 
-                    Console.WriteLine($"変換＋メタデータ処理を開始: {input}");
-                    Console.WriteLine($"変換形式: {format}");
+                    Console.WriteLine($@"{Message.startConvPro}: {input}");
+                    Console.WriteLine($@"{Message.conversionFormat}: {format}");
 
                     // Step 1: ファイル変換
                     string convertedFile;
@@ -389,16 +396,13 @@ namespace musicDL
                         convertedFile = await converter.ConvertAudioAsync(input, format, output);
                     }
 
-                    Console.WriteLine($"変換完了: {convertedFile}");
+                    Console.WriteLine($@"{Message.conversionComplete}: {convertedFile}");
 
-                    // Step 2: メタデータ処理と拡張機能実行
-                    string finalArtist = string.IsNullOrEmpty(artist) ? "不明" : artist;
-                    string finalTitle = string.IsNullOrEmpty(title) ? Path.GetFileNameWithoutExtension(convertedFile) : title;
 
-                    Console.WriteLine("拡張機能を実行中...");
-                    await processor.ProcessExistingFile(convertedFile, finalArtist, finalTitle);
+                    Console.WriteLine(Message.runExt);
+                    await processor.ProcessExistingFile(convertedFile, artist, title);
 
-                    Console.WriteLine("すべての処理が完了しました。");
+                    Console.WriteLine(Message.allCoplete);
                 }
                 catch (Exception ex)
                 {
@@ -419,7 +423,7 @@ namespace musicDL
                 try
                 {
                     if (!Directory.Exists(directory))
-                        throw new DirectoryNotFoundException($"ディレクトリが見つかりません: {directory}");
+                        throw new DirectoryNotFoundException($@"{Message.directoryNotFound}: {directory}");
 
                     var audioExtensions = new[] { ".mp3", ".flac", ".wav", ".aac", ".ogg" };
                     var audioFiles = Directory.GetFiles(directory)
@@ -428,16 +432,21 @@ namespace musicDL
 
                     if (!audioFiles.Any())
                     {
-                        Console.WriteLine("処理可能な音声ファイルが見つかりませんでした。");
+                        Console.WriteLine(Message.noProcessableFile);
                         return;
                     }
 
-                    Console.WriteLine($"{audioFiles.Count}個のファイルを{format}形式に変換し、メタデータ処理を実行します...");
+                    // {ファイル数}個のファイルを{フォーマット名}形式に変換し、メタデータ処理を実行します...
+                    Console.WriteLine(Message.convertProcessing, audioFiles.Count, format);
 
-                    MetadataProcessor processor = new(setting.Extended);
-                    AudioConverter converter = new(setting);
-                    converter.IsDebug = debug;
-                    processor.IsDebug = debug;
+                    MetadataProcessor processor = new(setting.Extended)
+                    {
+                        IsDebug = debug
+                    };
+                    AudioConverter converter = new(setting)
+                    {
+                        IsDebug = debug
+                    };
 
                     int successful = 0;
                     int failed = 0;
@@ -446,7 +455,7 @@ namespace musicDL
                     {
                         try
                         {
-                            Console.WriteLine($"\n処理中: {Path.GetFileName(file)}");
+                            Console.WriteLine($@"\n{Message.inProcess}: {Path.GetFileName(file)}");
 
                             // Step 1: ファイル変換
                             string convertedFile;
@@ -460,24 +469,26 @@ namespace musicDL
                             }
 
                             // Step 2: メタデータ処理と拡張機能実行
-                            string finalArtist = string.IsNullOrEmpty(artist) ? "不明" : artist;
+                            string finalArtist = string.IsNullOrEmpty(artist) ? Message.unknown : artist;
                             string finalTitle = Path.GetFileNameWithoutExtension(convertedFile);
 
                             await processor.ProcessExistingFile(convertedFile, finalArtist, finalTitle);
 
-                            Console.WriteLine($"完了: {Path.GetFileName(convertedFile)}");
+                            Console.WriteLine($@"{Message.complete}: {Path.GetFileName(convertedFile)}");
                             successful++;
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"エラー ({Path.GetFileName(file)}): {ex.Message}");
+                            Console.WriteLine($@"{Message.error} ({Path.GetFileName(file)}): {ex.Message}");
                             if (debug)
                                 Console.WriteLine(ex.ToString());
                             failed++;
                         }
                     }
 
-                    Console.WriteLine($"\nバッチ処理完了: 成功 {successful}件, 失敗 {failed}件");
+                    // バッチ処理完了: 成功 {successful}件, 失敗 {failed}件
+                    Console.WriteLine();
+                    Console.WriteLine(Message.batchProcessResult, successful, failed);
                 }
                 catch (Exception ex)
                 {
