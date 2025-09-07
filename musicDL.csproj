@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
+    <AssemblyName>musicdl</AssemblyName>
+    <Authors>shuit</Authors>
+    <Company />
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,11 +18,14 @@
     <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="System.ComponentModel.Composition" Version="9.0.6" />
-    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+    <PackageReference Include="z440.atl.core" Version="7.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="setting.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="auth-success.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -36,6 +43,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Message.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 

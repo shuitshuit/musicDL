@@ -2,8 +2,8 @@
 using Newtonsoft.Json.Linq;
 using SpotifyAPI.Web;
 using System.Text.RegularExpressions;
-using TagLib;
 using musicDL.Resources;
+using ATL;
 
 namespace musicDL
 {
@@ -11,7 +11,7 @@ namespace musicDL
     {
         public static async Task SelectMetadata(string artist, string title, string filePath, Dictionary<string, object> setting)
         {
-            TagLib.File musicFile = TagLib.File.Create(filePath);
+            var track = new Track(filePath);
 
             string clientId = setting["spotifyClientId"].ToString() ??
                 throw new ArgumentNullException("spotifyClientId");
@@ -74,8 +74,8 @@ namespace musicDL
                     select = new MusicInfo(info.Name, info.Artists.Select(x => x.Name).ToArray(),
                         info.Album.Name, info.Album.Artists.Select(x => x.Name).ToArray(),
                         new Uri(info.Album.Images[0].Url), info.Album.ReleaseDate, info.ExternalIds["isrc"],
-                        Convert.ToUInt32(info.DiscNumber), Convert.ToUInt32(info.TrackNumber),
-                        Convert.ToUInt32(info.Album.TotalTracks));
+                        info.DiscNumber, info.TrackNumber,
+                        info.Album.TotalTracks);
                 }
                 catch (AggregateException ex)
                 {
@@ -118,7 +118,7 @@ namespace musicDL
                     st.Close();
                     Console.WriteLine($@"Album Art on {albumArtPath}");
                 }
-                else if (System.IO.File.Exists(albumArt))
+                else if (File.Exists(albumArt))
                 {
                     albumArtPath = albumArt;
                 }
@@ -128,10 +128,9 @@ namespace musicDL
                     return;
                 }
                 //Apply Album Art
-                ByteVector bv = new(await System.IO.File.ReadAllBytesAsync(albumArtPath));
-                IPicture picture = new Picture(bv);
-                musicFile.Tag.Pictures = new IPicture[] { picture };
-                //Console.WriteLine($"Album Art: {imageUrl}");
+                track.EmbeddedPictures.Clear();
+                var albumArtInfo = PictureInfo.fromBinaryData(File.ReadAllBytes(albumArtPath));
+                track.EmbeddedPictures.Add(albumArtInfo);
             }
             catch (Exception ex)
             {
@@ -140,81 +139,26 @@ namespace musicDL
             }
             #endregion
 
-            #region add artist information
+            //Add Metadata
             try
             {
-                musicFile.Tag.Performers = select.Artists;
+                var release = DateTime.Parse(select.Release);
+                track.Title = select.Title;
+                track.Album = select.Album;
+                track.AlbumArtist = string.Join(' ', select.AlbumArtists);
+                track.Artist = string.Join(' ', select.Artists);
+                track.Year = release.Year;
+                track.OriginalReleaseDate = release;
+                track.DiscNumber = select.DiskNum;
+                track.TrackNumber = select.TrackNum;
+                track.ISRC = select.ISRC;
+                track.Save();
             }
-            catch { }
-            #endregion
-
-            #region Add music title
-            try
+            catch (Exception ex)
             {
-                musicFile.Tag.Title = select.Title;
+                Console.WriteLine($@"Metadata: {ex.Message}");
+                Console.WriteLine(ex);
             }
-            catch { }
-            #endregion
-
-            #region add album info
-            try
-            {
-                musicFile.Tag.Album = select.Album;
-            }
-            catch { }
-            #endregion
-
-            #region add album artists
-            try
-            {
-                musicFile.Tag.AlbumArtists = select.AlbumArtists;
-            }
-            catch { }
-            #endregion
-
-            #region add id
-            try
-            {
-                musicFile.Tag.ISRC = select.ISRC;
-            }
-            catch { }
-            #endregion
-
-            #region add disk num
-            try
-            {
-                musicFile.Tag.DiscCount = select.DiskNum;
-            }
-            catch { }
-            #endregion
-
-            #region add track num
-            try
-            {
-                musicFile.Tag.Track = select.TrackNum;
-            }
-            catch { }
-            #endregion
-
-            #region add release
-            try
-            {
-                var release = select.Release;
-                if (DateTime.TryParse(release, out var date))
-                {
-                    musicFile.Tag.Year = Convert.ToUInt32(date.Year);
-                }
-            }
-            catch { }
-            #endregion
-
-            #region add album track num
-            try
-            {
-                musicFile.Tag.TrackCount = select.TrackNum;
-            }
-            catch { }
-            #endregion
             return;
         }
 
@@ -237,9 +181,9 @@ namespace musicDL
                     var isrc = items[i].ExternalIds["isrc"]?.ToString() ?? throw new Exception();
                     var diskNum = items[i].DiscNumber;
                     var trackNum = items[i].TrackNumber;
-                    var albumTrackNum = items?[i].Album.TotalTracks;
+                    var albumTrackNum = items[i].Album.TotalTracks;
                     MusicInfo musicInfo = new(title, (from artist in items?[i]?.Artists ?? throw new Exception() select artist.Name ?? throw new Exception()).ToArray(), album, (from artist in items[i].Album.Artists ?? throw new Exception() select artist.Name ?? throw new Exception()).ToArray(), new Uri(albumArt),
-                        release, isrc, Convert.ToUInt32(diskNum), Convert.ToUInt32(trackNum), Convert.ToUInt32(albumTrackNum));
+                        release, isrc, diskNum, trackNum, albumTrackNum);
                     list.Add(musicInfo);
                 }
                 n += 3;
@@ -303,8 +247,8 @@ namespace musicDL
                         MusicInfo musicInfo = new(info.Name, info.Artists.Select(x => x.Name).ToArray(),
                             info.Album.Name, info.Album.Artists.Select(x => x.Name).ToArray(),
                             new Uri(info.Album.Images[0].Url), info.Album.ReleaseDate,info.ExternalIds["isrc"],
-                            Convert.ToUInt32(info.DiscNumber), Convert.ToUInt32(info.TrackNumber),
-                            Convert.ToUInt32(info.Album.TotalTracks));
+                            info.DiscNumber, info.TrackNumber,
+                            info.Album.TotalTracks);
                         return musicInfo;
 
                     }
@@ -343,13 +287,14 @@ namespace musicDL
             public Uri AlbumArt { get; set; }
             public string Release { get; set; }
             public string ISRC { get; set; }
-            public uint DiskNum { get; set; }
-            public uint TrackNum { get; set; }
-            public uint AlbumTrackNum { get; set; }
+            public int DiskNum { get; set; }
+            public int TrackNum { get; set; }
+            public int AlbumTrackNum { get; set; }
 
 
-            public MusicInfo(string title, string[] artists, string album, string[] albumArtists,
-                Uri albumArt, string release, string isrc, uint diskNum, uint trackNum, uint albumTrackNum)
+            public MusicInfo(string title, string[] artists, string album,
+                string[] albumArtists, Uri albumArt, string release,
+                string isrc, int diskNum, int trackNum, int albumTrackNum)
             {
                 Title = title;
                 Artists = artists;
@@ -362,19 +307,20 @@ namespace musicDL
                 TrackNum = trackNum;
                 AlbumTrackNum = albumTrackNum;
             }
+
             public MusicInfo()
             {
-                Title = string.Empty;
+                Title = "";
                 Artists = [];
-                Album = string.Empty;
+                Album = "";
                 AlbumArtists = [];
-                AlbumArt = new Uri("https://shuit.net");
-                Release = string.Empty;
-                ISRC = string.Empty;
+                AlbumArt = new Uri("https://example.com");
+                Release = "";
+                ISRC = "";
                 DiskNum = 0;
                 TrackNum = 0;
                 AlbumTrackNum = 0;
             }
-        }
+            }
     }
 }
