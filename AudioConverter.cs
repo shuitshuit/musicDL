@@ -1,3 +1,4 @@
+using ATL;
 using System.Diagnostics;
 
 namespace musicDL
@@ -47,7 +48,7 @@ namespace musicDL
 
             // FFmpegコマンドの構築
             string ffmpegArgs = BuildFFmpegArgs(inputPath, outputPath, targetFormat);
-            
+
             if (IsDebug)
                 Console.WriteLine($"ffmpeg {ffmpegArgs}");
 
@@ -57,12 +58,12 @@ namespace musicDL
                 Arguments = ffmpegArgs,
                 UseShellExecute = IsDebug,
                 CreateNoWindow = !IsDebug,
-                RedirectStandardOutput = !IsDebug,
-                RedirectStandardError = !IsDebug
+                RedirectStandardOutput = false,
+                RedirectStandardError = false
             };
 
             using Process? process = Process.Start(startInfo);
-            if (process == null) 
+            if (process == null)
                 throw new Exception("FFmpegプロセスの開始に失敗しました");
 
             while (!process.HasExited)
@@ -114,7 +115,7 @@ namespace musicDL
         public async Task<string> ConvertWithMetadataCopyAsync(string inputPath, AudioExtension targetFormat, string outputPath = "")
         {
             string convertedPath = await ConvertAudioAsync(inputPath, targetFormat, outputPath);
-            
+
             // メタデータをコピー
             try
             {
@@ -131,31 +132,11 @@ namespace musicDL
             return convertedPath;
         }
 
-        private async Task CopyMetadataAsync(string sourcePath, string targetPath)
+        private static async Task CopyMetadataAsync(string sourcePath, string targetPath)
         {
-            // TagLibSharpを使用してメタデータをコピー
-            using var sourceFile = TagLib.File.Create(sourcePath);
-            using var targetFile = TagLib.File.Create(targetPath);
-
-            targetFile.Tag.Title = sourceFile.Tag.Title;
-            targetFile.Tag.Artists = sourceFile.Tag.Artists;
-            targetFile.Tag.Album = sourceFile.Tag.Album;
-            targetFile.Tag.AlbumArtists = sourceFile.Tag.AlbumArtists;
-            targetFile.Tag.Genres = sourceFile.Tag.Genres;
-            targetFile.Tag.Year = sourceFile.Tag.Year;
-            targetFile.Tag.Track = sourceFile.Tag.Track;
-            targetFile.Tag.TrackCount = sourceFile.Tag.TrackCount;
-            targetFile.Tag.Disc = sourceFile.Tag.Disc;
-            targetFile.Tag.DiscCount = sourceFile.Tag.DiscCount;
-            targetFile.Tag.Comment = sourceFile.Tag.Comment;
-
-            // アルバムアートをコピー
-            if (sourceFile.Tag.Pictures.Length > 0)
-            {
-                targetFile.Tag.Pictures = sourceFile.Tag.Pictures;
-            }
-
-            targetFile.Save();
+            var sourceTrack = new Track(sourcePath);
+            var targetTrack = new Track(targetPath);
+            sourceTrack.CopyMetadataTo(targetTrack);
             await Task.CompletedTask;
         }
     }

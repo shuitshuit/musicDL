@@ -102,15 +102,45 @@ namespace musicDL
                 httpListener.Stop();
                 throw new UserInputSkipException();
             }
+            Console.WriteLine(); // Uploading... とぶつかるので改行
             var context = await contextTask;
             var query = context.Request.Url?.Query;
 
             // レスポンスを送信
-            var responseString = "<html><body><h1>認証完了</h1><p>このタブを閉じてアプリケーションに戻ってください。</p></body></html>";
-            var buffer = Encoding.UTF8.GetBytes(responseString);
-            context.Response.ContentLength64 = buffer.Length;
-            await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            context.Response.OutputStream.Close();
+            try
+            {
+                var responseString = await LoadAuthSuccessHtml();
+                var buffer = Encoding.UTF8.GetBytes(responseString);
+                
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "text/html; charset=utf-8";
+                context.Response.ContentLength64 = buffer.Length;
+                
+                using (var output = context.Response.OutputStream)
+                {
+                    output.Write(buffer, 0, buffer.Length);
+                    output.Flush();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Response error: {ex.Message}");
+                try
+                {
+                    var errorResponse = "Authentication completed. You can close this tab.";
+                    var errorBuffer = Encoding.UTF8.GetBytes(errorResponse);
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "text/plain; charset=utf-8";
+                    context.Response.ContentLength64 = errorBuffer.Length;
+                    using (var output = context.Response.OutputStream)
+                    {
+                        output.Write(errorBuffer, 0, errorBuffer.Length);
+                        output.Flush();
+                    }
+                }
+                catch { }
+            }
+            context.Response.Close();
             httpListener.Stop();
 
             // 認証コードを取得
@@ -202,6 +232,44 @@ namespace musicDL
                 throw new InvalidOperationException("Access token not found in response");
 
             return tokenData["access_token"].ToString()!;
+        }
+
+        private static async Task<string> LoadAuthSuccessHtml()
+        {
+            try
+            {
+                var htmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "auth-success.html");
+                if (File.Exists(htmlFilePath))
+                {
+                    return await File.ReadAllTextAsync(htmlFilePath);
+                }
+                
+                // フォールバック: ファイルが見つからない場合は基本的なHTMLを返す
+                return @"<!DOCTYPE html>
+<html lang=""ja"">
+<head>
+    <meta charset=""UTF-8"">
+    <title>認証完了</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; background-color: #f0f0f0; }
+        .container { background: white; padding: 50px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block; }
+        h1 { color: #4CAF50; margin-bottom: 20px; }
+        p { color: #333; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <h1>✓ 認証完了！</h1>
+        <p>このタブを閉じてアプリケーションに戻ってください。</p>
+    </div>
+</body>
+</html>";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"HTML file loading error: {ex.Message}");
+                return "<html><body><h1>Success!</h1><p>このタブを閉じてアプリケーションに戻ってください。</p></body></html>";
+            }
         }
 
         private static Dictionary<string, string> ParseQueryString(string query)
