@@ -6,11 +6,64 @@ namespace musicDL
     public class AudioConverter
     {
         private readonly Setting _setting;
+        private readonly List<Process> _runningProcesses = new();
+        private static bool _exitHandlerRegistered = false;
+        private static readonly object _lock = new object();
         public bool IsDebug { get; set; } = false;
 
         public AudioConverter(Setting setting)
         {
             _setting = setting;
+            RegisterExitHandler();
+        }
+
+        private void RegisterExitHandler()
+        {
+            lock (_lock)
+            {
+                if (!_exitHandlerRegistered)
+                {
+                    AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+                    Console.CancelKeyPress += OnCancelKeyPress;
+                    _exitHandlerRegistered = true;
+                }
+            }
+        }
+
+        private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+        {
+            KillAllRunningProcesses();
+            e.Cancel = false;
+        }
+
+        private void OnProcessExit(object? sender, EventArgs e)
+        {
+            KillAllRunningProcesses();
+        }
+
+        private void KillAllRunningProcesses()
+        {
+            lock (_runningProcesses)
+            {
+                foreach (var process in _runningProcesses.ToList())
+                {
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            if (IsDebug)
+                                Console.WriteLine($"Killing ffmpeg process {process.Id}");
+                            process.Kill();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        if (IsDebug)
+                            Console.WriteLine($"Failed to kill process: {ex.Message}");
+                    }
+                }
+                _runningProcesses.Clear();
+            }
         }
 
         public async Task<string> ConvertAudioAsync(string inputPath, AudioExtension targetFormat, string outputPath = "")
@@ -66,25 +119,42 @@ namespace musicDL
             if (process == null)
                 throw new Exception("FFmpegプロセスの開始に失敗しました");
 
-            while (!process.HasExited)
+            // プロセスを追跡リストに追加
+            lock (_runningProcesses)
             {
+                _runningProcesses.Add(process);
+            }
+
+            try
+            {
+                while (!process.HasExited)
+                {
+                    if (!IsDebug)
+                        Spiner.Spin($"変換中 ({inputExtension} → {targetExtensionString})...");
+                    await Task.Delay(100);
+                }
+
                 if (!IsDebug)
-                    Spiner.Spin($"変換中 ({inputExtension} → {targetExtensionString})...");
-                await Task.Delay(100);
-            }
+                {
+                    Console.SetCursorPosition(0, Console.CursorTop);
+                    Console.WriteLine($"変換完了: {Path.GetFileName(outputPath)}");
+                }
 
-            if (!IsDebug)
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode != 0)
+                    throw new Exception($"FFmpegプロセスがエラーで終了しました (終了コード: {process.ExitCode})");
+
+                return outputPath;
+            }
+            finally
             {
-                Console.SetCursorPosition(0, Console.CursorTop);
-                Console.WriteLine($"変換完了: {Path.GetFileName(outputPath)}");
+                // プロセスを追跡リストから削除
+                lock (_runningProcesses)
+                {
+                    _runningProcesses.Remove(process);
+                }
             }
-
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
-                throw new Exception($"FFmpegプロセスがエラーで終了しました (終了コード: {process.ExitCode})");
-
-            return outputPath;
         }
 
         private static string BuildFFmpegArgs(string inputPath, string outputPath, AudioExtension targetFormat)
@@ -102,14 +172,25 @@ namespace musicDL
             string qualityArgs = targetFormat switch
             {
                 AudioExtension.Mp3 => "-b:a 320k",
-                AudioExtension.Flac => "-compression_level 8",
+                AudioExtension.Flac => "-compression_level 5",  // 8から5に変更（速度優先）
                 AudioExtension.Wav => "",
                 AudioExtension.Aac => "-b:a 256k",
                 AudioExtension.Ogg => "-q:a 6",
                 _ => ""
             };
 
-            return $"-i \"{inputPath}\" -acodec {codec} {qualityArgs} \"{outputPath}\" -y";
+            // 高速化のための共通オプション
+            string speedOptimizations = "-threads 0 -preset ultrafast";
+
+            // コーデック固有の高速化オプション
+            string codecSpecificOptions = targetFormat switch
+            {
+                AudioExtension.Mp3 => "-q:a 2",  // VBRで高速化
+                AudioExtension.Aac => "-aac_coder fast",  // 高速AACエンコーダー
+                _ => ""
+            };
+
+            return $"-i \"{inputPath}\" -acodec {codec} {qualityArgs} {speedOptimizations} {codecSpecificOptions} \"{outputPath}\" -y".Trim();
         }
 
         public async Task<string> ConvertWithMetadataCopyAsync(string inputPath, AudioExtension targetFormat, string outputPath = "")
