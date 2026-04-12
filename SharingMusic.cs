@@ -13,12 +13,12 @@ namespace musicDL
     {
         private const string RedirectUri = "http://localhost:8080/callback";
 
-        public static async Task Shring(Dictionary<string, object> setting, string filePath)
+        public static async Task Shring(Dictionary<string, object> setting, string filePath, string? accessToken = null)
         {
             try
             {
                 Console.WriteLine("Sharing files to your own device");
-                string accessToken = await GetToken(setting);
+                accessToken ??= await GetToken(setting);
                 using var client = new HttpClient();
                 string uploadUrl = setting["uploadEndpoint"].ToString() ?? "https://musicdl.shuit.net/api/upload";
                 MultipartFormDataContent content = [];
@@ -63,7 +63,7 @@ namespace musicDL
             }
         }
 
-        private static async Task<string> GetToken(Dictionary<string, object> setting)
+        internal static async Task<string> GetToken(Dictionary<string, object> setting)
         {
             if (string.IsNullOrEmpty(setting?["clientId"].ToString()))
                 throw new ArgumentException("clientId is not set in settings.");
