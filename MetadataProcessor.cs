@@ -29,8 +29,9 @@ namespace musicDL
 
             try
             {
-                await AlbumArt.SelectMetadata(this.Artist, this.Title, filePath, setting["AlbumArt"]);
-                await SharingMusic.Shring(setting["Sharing"], filePath);
+                string accessToken = await SharingMusic.GetToken(setting["Sharing"]);
+                await AlbumArt.SelectMetadata(this.Artist, this.Title, filePath, setting["AlbumArt"], accessToken);
+                await SharingMusic.Shring(setting["Sharing"], filePath, accessToken);
 
                 Console.WriteLine(Message.metadataComplete);
 
