@@ -256,6 +256,7 @@ namespace musicDL
                 {
                     var r = recording.Releases[i];
                     Console.WriteLine($"{i + 1}: {r.Title} / {r.ArtistCredit} ({r.Date})");
+                    Console.WriteLine($"   {string.Format(CoverArtArchiveUrl, r.Mbid)}");
                 }
                 Console.Write("番号を入力 [1]: ");
                 string sel = Console.ReadLine() ?? "1";
