@@ -143,6 +143,7 @@ namespace musicDL
                     Console.WriteLine($@"   artist: {item.ArtistCredit}");
                     if (item.LengthMs.HasValue)
                         Console.WriteLine($@"   length: {TimeSpan.FromMilliseconds(item.LengthMs.Value):m\:ss}");
+                    Console.WriteLine($@"   https://musicbrainz.org/recording/{item.Mbid}");
                     Console.WriteLine();
                     x++;
                 }
