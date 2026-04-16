@@ -22,7 +22,8 @@ namespace musicDL
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             // レコーディングを検索
-            var searchUrl = $"{metaEndpoint}/search?q={Uri.EscapeDataString(title)}&type=recording&limit=20";
+            bool exact = !setting.TryGetValue("exact", out var exactVal) || exactVal is not false;
+            var searchUrl = $"{metaEndpoint}/search?q={Uri.EscapeDataString(title)}&type=recording&limit=20&exact={exact.ToString().ToLower()}";
             var searchTask = httpClient.GetAsync(searchUrl);
             while (!searchTask.IsCompleted)
                 Spiner.Spin("Searching...");

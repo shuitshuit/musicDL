@@ -9,6 +9,7 @@ namespace musicDL
         public string? Title;
         public AudioExtension AudioExtension = AudioExtension.Flac;
         public bool IsDebug = false;
+        public bool Exact = true;
 
         public async Task ProcessExistingFile(string filePath, string artist = "不明", string title = "")
         {
@@ -30,8 +31,9 @@ namespace musicDL
             try
             {
                 string accessToken = await SharingMusic.GetToken(setting["Sharing"]);
+                setting["AlbumArt"]["exact"] = this.Exact;
                 await AlbumArt.SelectMetadata(this.Artist, this.Title, filePath, setting["AlbumArt"], accessToken);
-                await SharingMusic.Shring(setting["Sharing"], filePath, accessToken);
+                await SharingMusic.Sharing(setting["Sharing"], filePath, accessToken);
 
                 Console.WriteLine(Message.metadataComplete);
 

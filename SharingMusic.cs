@@ -13,7 +13,7 @@ namespace musicDL
     {
         private const string RedirectUri = "http://localhost:8080/callback";
 
-        public static async Task Shring(Dictionary<string, object> setting, string filePath, string? accessToken = null)
+        public static async Task Sharing(Dictionary<string, object> setting, string filePath, string? accessToken = null)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace musicDL
                 else
                 {
                     Console.WriteLine($@"Failed to sharing. statusCode: {(int)response.StatusCode}");
-                    //Console.WriteLine(await response.Content.ReadAsStringAsync());
+                    Console.WriteLine(await response.Content.ReadAsStringAsync());
                 }
             }
             catch (UserInputSkipException)

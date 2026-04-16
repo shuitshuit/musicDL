@@ -64,6 +64,10 @@ namespace musicDL
             processDebugOption.SetDefaultValue(false);
             processCommand.AddOption(processDebugOption);
 
+            var processExactOption = new CommandLine.Option<bool>(["--exact", "-e"], "完全一致で検索するかどうか");
+            processExactOption.SetDefaultValue(true);
+            processCommand.AddOption(processExactOption);
+
             // バッチ処理コマンド
             var batchCommand = new Command("batch", Message.batchCommandDescription);
             batchCommand.AddAlias("b");
@@ -76,6 +80,10 @@ namespace musicDL
             var batchDebugOption = new CommandLine.Option<bool>(["-d", "--debug"], Message.DebugOptionDescription);
             batchDebugOption.SetDefaultValue(false);
             batchCommand.AddOption(batchDebugOption);
+
+            var batchExactOption = new CommandLine.Option<bool>(["--exact", "-e"], "完全一致で検索するかどうか");
+            batchExactOption.SetDefaultValue(true);
+            batchCommand.AddOption(batchExactOption);
 
             #endregion
 
@@ -150,6 +158,10 @@ namespace musicDL
             tfDebugOption.SetDefaultValue(false);
             transformCommand.AddOption(tfDebugOption);
 
+            var tfExactOption = new CommandLine.Option<bool>(["--exact", "-e"], "完全一致で検索するかどうか");
+            tfExactOption.SetDefaultValue(true);
+            transformCommand.AddOption(tfExactOption);
+
             // バッチ変換＋メタデータ処理コマンド
             var batchTransformCommand = new Command("batch-transform", Message.batchTransformCommandDescription);
             batchTransformCommand.AddAlias("btf");
@@ -171,6 +183,10 @@ namespace musicDL
             btfDebugOption.SetDefaultValue(false);
             batchTransformCommand.AddOption(btfDebugOption);
 
+            var btfExactOption = new CommandLine.Option<bool>(["--exact", "-e"], "完全一致で検索するかどうか");
+            btfExactOption.SetDefaultValue(true);
+            batchTransformCommand.AddOption(btfExactOption);
+
             #endregion
 
             int exitCode = 0;
@@ -179,13 +195,14 @@ namespace musicDL
 
             #region Process Command Handlers
 
-            processCommand.SetHandler(async (filePath, artist, title, debug) =>
+            processCommand.SetHandler(async (filePath, artist, title, debug, exact) =>
             {
                 try
                 {
                     MetadataProcessor processor = new(setting.Extended)
                     {
-                        IsDebug = debug
+                        IsDebug = debug,
+                        Exact = exact
                     };
                     await processor.ProcessExistingFile(filePath, artist, title);
                 }
@@ -201,9 +218,9 @@ namespace musicDL
                         Console.WriteLine(ex.Message);
 #endif
                 }
-            }, filePathArg, processArtistOption, processTitleOption, processDebugOption);
+            }, filePathArg, processArtistOption, processTitleOption, processDebugOption, processExactOption);
 
-            batchCommand.SetHandler(async (directory, artist, debug) =>
+            batchCommand.SetHandler(async (directory, artist, debug, exact) =>
             {
                 try
                 {
@@ -223,8 +240,11 @@ namespace musicDL
 
                     Console.WriteLine($"{audioFiles.Count}個のファイルを処理します...");
 
-                    MetadataProcessor processor = new(setting.Extended);
-                    processor.IsDebug = debug;
+                    MetadataProcessor processor = new(setting.Extended)
+                    {
+                        IsDebug = debug,
+                        Exact = exact
+                    };
 
                     foreach (var file in audioFiles)
                     {
@@ -252,7 +272,7 @@ namespace musicDL
                         Console.WriteLine(ex.Message);
 #endif
                 }
-            }, directoryArg, batchArtistOption, batchDebugOption);
+            }, directoryArg, batchArtistOption, batchDebugOption, batchExactOption);
 
             #endregion
 
@@ -369,13 +389,14 @@ namespace musicDL
 
             #region Combined Command Handlers
 
-            transformCommand.SetHandler(async (input, format, output, artist, title, keepMetadata, debug) =>
+            transformCommand.SetHandler(async (input, format, output, artist, title, keepMetadata, debug, exact) =>
             {
                 try
                 {
                     MetadataProcessor processor = new(setting.Extended)
                     {
-                        IsDebug = debug
+                        IsDebug = debug,
+                        Exact = exact
                     };
                     AudioConverter converter = new(setting)
                     {
@@ -416,9 +437,9 @@ namespace musicDL
                         Console.WriteLine(ex.Message);
 #endif
                 }
-            }, transformInputArg, tfFormatOption, tfOutputOption, tfArtistOption, tfTitleOption, tfKeepMetadataOption, tfDebugOption);
+            }, transformInputArg, tfFormatOption, tfOutputOption, tfArtistOption, tfTitleOption, tfKeepMetadataOption, tfDebugOption, tfExactOption);
 
-            batchTransformCommand.SetHandler(async (directory, format, artist, keepMetadata, debug) =>
+            batchTransformCommand.SetHandler(async (directory, format, artist, keepMetadata, debug, exact) =>
             {
                 try
                 {
@@ -441,7 +462,8 @@ namespace musicDL
 
                     MetadataProcessor processor = new(setting.Extended)
                     {
-                        IsDebug = debug
+                        IsDebug = debug,
+                        Exact = exact
                     };
                     AudioConverter converter = new(setting)
                     {
@@ -502,7 +524,7 @@ namespace musicDL
                         Console.WriteLine(ex.Message);
 #endif
                 }
-            }, btfDirArg, btfFormatOption, btfArtistOption, btfKeepMetadataOption, btfDebugOption);
+            }, btfDirArg, btfFormatOption, btfArtistOption, btfKeepMetadataOption, btfDebugOption, btfExactOption);
 
             #endregion
 
