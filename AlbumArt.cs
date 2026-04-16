@@ -23,7 +23,8 @@ namespace musicDL
 
             // レコーディングを検索
             bool exact = !setting.TryGetValue("exact", out var exactVal) || exactVal is not false;
-            var searchUrl = $"{metaEndpoint}/search?q={Uri.EscapeDataString(title)}&type=recording&limit=20&exact={exact.ToString().ToLower()}";
+            string artistParam = artist != Message.unknown ? $"&artist={Uri.EscapeDataString(artist)}" : "";
+            var searchUrl = $"{metaEndpoint}/search?q={Uri.EscapeDataString(title)}&type=recording&limit=20&exact={exact.ToString().ToLower()}{artistParam}";
             var searchTask = httpClient.GetAsync(searchUrl);
             while (!searchTask.IsCompleted)
                 Spiner.Spin("Searching...");
