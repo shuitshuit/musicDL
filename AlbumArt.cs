@@ -23,7 +23,11 @@ namespace musicDL
 
             // レコーディングを検索
             var searchUrl = $"{metaEndpoint}/search?q={Uri.EscapeDataString(title)}&type=recording&limit=20";
-            var searchResponse = await httpClient.GetAsync(searchUrl);
+            var searchTask = httpClient.GetAsync(searchUrl);
+            while (!searchTask.IsCompleted)
+                Spiner.Spin("Searching...");
+            Console.SetCursorPosition(0, Console.CursorTop);
+            var searchResponse = await searchTask;
             if (!searchResponse.IsSuccessStatusCode)
                 throw new Exception($"メタデータ検索に失敗しました: {searchResponse.StatusCode}");
 
@@ -67,7 +71,11 @@ namespace musicDL
 
                 var coverUrl = string.Format(CoverArtArchiveUrl, select.ReleaseMbid);
                 using var coverClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true });
-                var img = await coverClient.GetAsync(coverUrl);
+                var coverTask = coverClient.GetAsync(coverUrl);
+                while (!coverTask.IsCompleted)
+                    Spiner.Spin("Fetching album art...");
+                Console.SetCursorPosition(0, Console.CursorTop);
+                var img = await coverTask;
 
                 if (img.IsSuccessStatusCode)
                 {
@@ -214,7 +222,11 @@ namespace musicDL
             HttpClient httpClient, string metaEndpoint)
         {
             var recUrl = $"{metaEndpoint}/recording/{Uri.EscapeDataString(recordingMbid)}";
-            var recResponse = await httpClient.GetAsync(recUrl);
+            var recTask = httpClient.GetAsync(recUrl);
+            while (!recTask.IsCompleted)
+                Spiner.Spin("Fetching metadata...");
+            Console.SetCursorPosition(0, Console.CursorTop);
+            var recResponse = await recTask;
             if (!recResponse.IsSuccessStatusCode)
             {
                 Console.WriteLine($"レコーディング取得失敗: {recResponse.StatusCode}");
@@ -253,7 +265,11 @@ namespace musicDL
 
             // リリース詳細を取得してディスク/トラック番号を特定
             var relUrl = $"{metaEndpoint}/release/{Uri.EscapeDataString(releaseRef.Mbid)}";
-            var relResponse = await httpClient.GetAsync(relUrl);
+            var relTask = httpClient.GetAsync(relUrl);
+            while (!relTask.IsCompleted)
+                Spiner.Spin("Fetching metadata...");
+            Console.SetCursorPosition(0, Console.CursorTop);
+            var relResponse = await relTask;
             if (!relResponse.IsSuccessStatusCode)
             {
                 Console.WriteLine($"リリース取得失敗: {relResponse.StatusCode}");
